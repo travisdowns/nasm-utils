@@ -2,5 +2,6 @@
 *.o
 core
 dummy.rebuild
-test
+test-*-c
+test-*-asm
 *.list

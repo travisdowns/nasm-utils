@@ -1,6 +1,6 @@
 ; test functions for the test process
 
-%include "nasm-util-inc.asm"
+%include "nasm-utils-inc.asm"
 
 default rel
 

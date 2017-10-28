@@ -33,6 +33,25 @@ boil1 r14, 5
 boil1 r15, 6
 %endmacro
 
+;; By default, the "assert-like" features that can be conditionally enabled key off the value of the
+;; NDEBUG macro: if it is defined, the slower, more heavily checked paths are enabled, otherwise they
+;; are omitted (usually resulting in zero additional cost).
+;;
+;; If you don't want to rely on NDEBUG can specifically enable or disable the debug mode with the
+;; NASM_ENABLE_DEBUG set to 0 (equivalent to NDEBUG set) or 1 (equivalent to NDEBUG not set)
+%ifndef NASM_ENABLE_DEBUG
+    %ifdef NDEBUG
+        %define NASM_ENABLE_DEBUG 0
+    %else
+        %define NASM_ENABLE_DEBUG 1
+    %endif
+%elif (NASM_ENABLE_DEBUG != 0) && (NASM_ENABLE_DEBUG != 1)
+    %error bad value for 'NASM_ENABLE_DEBUG': should be 0 or 1 but was NASM_ENABLE_DEBUG
+%endif
+
+
+
+
 ;; This macro supports declaring a "ABI-checked" function in asm
 ;; An ABI-checked function will checked at each invocation for compliance with the SysV ABI
 ;; rules about callee saved registers. In particular, from the ABI cocument we have the following:
@@ -46,8 +65,9 @@ boil1 r15, 6
 GLOBAL %1:function
 %1:
 
-;push rbp
-;mov  rbp, rsp
+%if NASM_ENABLE_DEBUG != 0
+
+;%warning compiling ABI checks
 
 ; save all the callee-saved regs
 push_callee_saved
@@ -71,8 +91,11 @@ cmp r15, [rsp]
 jne bad_r15
 
 add rsp, 6 * 8
-;leave
 ret
+
+%else ; debug off, just assemble the function as-is without any checks
+;%warning compiling without ABI checks
+%endif
 
 ; here we store strings needed by the failure cases, in the .rodata section
 [section .rodata]

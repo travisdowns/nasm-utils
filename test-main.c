@@ -18,10 +18,26 @@ int64_t test_clobber_r13(void);
 int64_t test_clobber_r14(void);
 int64_t test_clobber_r15(void);
 
+#ifdef USE_C_THUNK
+// test the generic C thunk which can wrap most C functions in code that calls a generic thunk
+#include "nasm-utils.h"
+
+#define CALL_FUNCTION_RET   CALL_THUNKED_RET
+#define CALL_FUNCTION_VOID  CALL_THUNKED_VOID
+
+#else
+// defines to test the asm version of the thunk
+// that thunk is implemented purely in the asm surrounding the function, so it is transparent at
+// compile-time to the C code
+#define CALL_FUNCTION_RET(RET, F, ARGS) RET = F ARGS;
+#define CALL_FUNCTION_VOID(F, ARGS) F ARGS;
+#endif
+
 void die(const char *msg) {
     printf("FAILURE: %s\n", msg);
     exit(EXIT_FAILURE);
 }
+
 
 int main(int argc, char **argv) {
 
@@ -34,13 +50,15 @@ int main(int argc, char **argv) {
         uint64_t ret;
 
         // test that a basic function that just returns immediately works
-        if ((ret = test_simple()) != MAGIC_RETURN) {
+        CALL_FUNCTION_RET(ret, test_simple, ());
+        if (ret != MAGIC_RETURN) {
             printf("BAD ret:\nret:      %zu\nexpected: %zu\n", ret, MAGIC_RETURN);
             die("good_asm didn't return MAGIC_RETURN");
         }
 
         // test that a function that clobbers all caller saved regs works
-        if ((ret = test_clobber_ok()) != MAGIC_RETURN) {
+        CALL_FUNCTION_RET(ret, test_clobber_ok, ());
+        if (ret != MAGIC_RETURN) {
             printf("BAD ret:\nret:      %zu\nexpected: %zu\n", ret, MAGIC_RETURN);
             die("good_asm didn't return MAGIC_RETURN");
         }
@@ -51,9 +69,10 @@ int main(int argc, char **argv) {
 
 #define TESTCASE(REG) \
         else if (strcmp(testcase, #REG) == 0) { \
-            test_clobber_ ## REG (); \
+            CALL_FUNCTION_VOID(test_clobber_ ## REG, ())\
+            asm volatile ("" ::: "rbp", "rbx", "r12", "r13", "r14", "r15", "memory"); \
             /* the above line should terminate the process (the test script will test the output for the correct output)*/ \
-            printf("FAILURE: clobbering of register %s wasn't detected\n", #REG); \
+            printf("CLOBBER NOT DETECTED %s\n", #REG); \
             exit(EXIT_FAILURE); \
         }
 
