@@ -106,9 +106,6 @@ jne bad_r15
 add rsp, 6 * 8
 ret
 
-%else ; debug off, just assemble the function as-is without any checks
-;%warning compiling without ABI checks
-%endif
 
 ; here we store strings needed by the failure cases, in the .rodata section
 [section .rodata]
@@ -123,6 +120,8 @@ db fname,0
 
 ; restore the previous section
 __SECT__
+
+%endif ; debug off, just assemble the function as-is without any checks
 
 %1_inner:
 %endmacro;; internal
