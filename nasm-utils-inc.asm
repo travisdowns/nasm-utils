@@ -25,12 +25,12 @@ push r15
 
 ;; pop the 6 callee-saved registers in the order compatible with push_callee_saved
 %macro pop_callee_saved 0
-push r15
-push r14
-push r13
-push r12
-push rbx
-push rbp
+pop r15
+pop r14
+pop r13
+pop r12
+pop rbx
+pop rbp
 %endmacro
 
 ;; boilerplate needed once when abi_checked_function is used
