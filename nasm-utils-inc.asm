@@ -84,7 +84,9 @@ GLOBAL %1:function
 
 ; save all the callee-saved regs
 push_callee_saved
+push    rax  ; dummy push to align the stack (before we have rsp % 16 == 8)
 call %1_inner
+add     rsp, 8 ; undo dummy push
 
 ; load the function name (ok to clobber rdi since it's callee-saved)
 mov rdi, %1_thunk_fn_name
