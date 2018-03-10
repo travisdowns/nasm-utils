@@ -76,6 +76,7 @@ boil1 r15, 6
 ;;
 %macro abi_checked_function 1
 GLOBAL %1:function
+
 %1:
 
 %if NASM_ENABLE_DEBUG != 0
@@ -123,10 +124,10 @@ db fname,0
 ; restore the previous section
 __SECT__
 
+%1_inner:
 %endif ; debug off, just assemble the function as-is without any checks
 
-%1_inner:
-%endmacro;; internal
+%endmacro
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;
