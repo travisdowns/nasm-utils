@@ -5,3 +5,4 @@ dummy.rebuild
 test-*-c
 test-*-asm
 *.list
+*.d
