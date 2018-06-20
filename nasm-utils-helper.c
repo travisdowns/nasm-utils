@@ -10,6 +10,8 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <inttypes.h>
+#include <assert.h>
 
 
 // mapping from reg_id to register name
@@ -34,4 +36,8 @@ void nasm_util_die_on_reg_clobber(const char *fname, unsigned reg_id) {
     abort();
 }
 
-
+void nasm_util_assert_failed(const char *left, const char *right, const char *filename, int64_t line) {
+    fprintf(stderr, "%s:%ld : Assertion failed: %s == %s\n", filename, (long)line, left, right);
+    fflush(stderr);
+    abort();
+}

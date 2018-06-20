@@ -33,6 +33,52 @@ pop rbx
 pop rbp
 %endmacro
 
+EXTERN nasm_util_assert_failed
+
+; place the string value of a tken in .rodata using %defstr
+; arg1 - the token to make into a string
+; arg2 - label which will point to the string
+%macro make_string_tok 2
+%defstr make_string_temp %1
+make_string make_string_temp, %2
+%endmacro
+
+%macro make_string 2
+[section .rodata]
+%2:
+db %1,0
+; restore the previous section
+__SECT__
+%endmacro
+
+%macro nasm_util_assert_boilerplate 0
+make_string __FILE__, parent_filename
+%define ASSERT_BOILERPLATE 1
+%endmacro
+
+%macro check_assert_boilerplate 0
+%ifndef ASSERT_BOILERPLATE
+%error "To use asserts, you must include a call to nasm_util_assert_boilerplate once in each file"
+%endif
+%endmacro
+
+;; assembly level asserts
+;; if the assert occurs, termination is assumed so control never passes back to the caller
+;; and registers are not preserved
+%macro assert_eq 2
+check_assert_boilerplate
+cmp     %1, %2
+je      %%assert_ok
+make_string_tok %1, %%assert_string1
+make_string_tok %2, %%assert_string2
+lea     rdi, [%%assert_string1]
+lea     rsi, [%%assert_string2]
+lea     rdx, [parent_filename]
+mov     rcx, __LINE__
+jmp     nasm_util_assert_failed
+%%assert_ok:
+%endmacro
+
 ;; boilerplate needed once when abi_checked_function is used
 %macro thunk_boilerplate 0
 ; this function is defined by the C helper code
