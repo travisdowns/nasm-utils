@@ -39,8 +39,14 @@ EXTERN nasm_util_assert_failed
 ; arg1 - the token to make into a string
 ; arg2 - label which will point to the string
 %macro make_string_tok 2
+%ifdef __YASM_MAJOR__
+; yasm has no support for defstr so we just use a fixed string for now
+; see https://github.com/travisdowns/nasm-utils/issues/1
+make_string 'make_string_tok yasm bug', %2
+%else
 %defstr make_string_temp %1
 make_string make_string_temp, %2
+%endif
 %endmacro
 
 %macro make_string 2
