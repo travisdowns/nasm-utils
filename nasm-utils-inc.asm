@@ -15,22 +15,22 @@
 
 ;; push the 6 callee-saved registers defined in the the SysV C ABI
 %macro push_callee_saved 0
-push rbp
 push rbx
 push r12
 push r13
 push r14
 push r15
+push rbp
 %endmacro
 
 ;; pop the 6 callee-saved registers in the order compatible with push_callee_saved
 %macro pop_callee_saved 0
+pop rbp
 pop r15
 pop r14
 pop r13
 pop r12
 pop rbx
-pop rbp
 %endmacro
 
 EXTERN nasm_util_assert_failed
