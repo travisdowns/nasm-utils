@@ -145,18 +145,18 @@ add     rsp, 8 ; undo dummy push
 mov rdi, %1_thunk_fn_name
 
 ; now check whether any regs were clobbered
-cmp rbp, [rsp + 40]
-jne bad_rbp
-cmp rbx, [rsp + 32]
+cmp rbx, [rsp + 40]
 jne bad_rbx
-cmp r12, [rsp + 24]
+cmp r12, [rsp + 32]
 jne bad_r12
-cmp r13, [rsp + 16]
+cmp r13, [rsp + 24]
 jne bad_r13
-cmp r14, [rsp + 8]
+cmp r14, [rsp + 16]
 jne bad_r14
-cmp r15, [rsp]
+cmp r15, [rsp +  8]
 jne bad_r15
+cmp rbp, [rsp +  0]
+jne bad_rbp
 
 add rsp, 6 * 8
 ret
@@ -193,7 +193,7 @@ bad_%1:
 ; A thunk has determined that a reg was clobbered
 ; each reg has their own bad_ function which moves the function name (in rdx) into
 ; rdi and loads a constant indicating which reg was involved and calls a C routine
-; that will do the rest (abort the program generall). We follow up with an ud2 in case
+; that will do the rest (generally, it will abort the program). We follow up with an ud2 in case
 ; the C routine returns, since this mechanism is not designed for recovery.
 mov rsi, %2
 ; here we set up a stack frame - this gives a meaningful backtrace in any core file produced by the abort

@@ -37,7 +37,7 @@
         thunk(&closure, #FN); \
 }
 
-void* closure_thunk(void (*)(void));
+void* closure_thunk(void (*)(void), const char *);
 
 #else
 
